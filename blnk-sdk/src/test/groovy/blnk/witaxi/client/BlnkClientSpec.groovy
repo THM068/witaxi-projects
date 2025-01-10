@@ -1,14 +1,11 @@
 package blnk.witaxi.client
-
-import blnk.witaxi.ledger.LedgerRequest
-import blnk.witaxi.ledger.LedgerResponse
+import blnk.witaxi.ledger.GetLedgerRequest
+import blnk.witaxi.ledger.CreateLedgerRequest
 import blnk.witaxi.ledger.Ledger_Meta
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import net.datafaker.Faker
 import spock.lang.Specification
-
-import java.net.http.HttpClient
 
 @MicronautTest(environments = ["test"])
 class BlnkClientSpec extends Specification {
@@ -23,7 +20,7 @@ class BlnkClientSpec extends Specification {
             String ledgerName = String.format("Ledger for %s",faker.name().fullName())
             String projectOwner = faker.name().firstName()
             Ledger_Meta ledger_meta = new Ledger_Meta(projectOwner)
-            LedgerRequest ledgerRequest = new LedgerRequest(ledgerName, ledger_meta)
+            CreateLedgerRequest ledgerRequest = new CreateLedgerRequest(ledgerName, ledger_meta)
         when:
             def ledgerResponse = blnkClient.createLedger(ledgerRequest)
         then:
@@ -33,5 +30,13 @@ class BlnkClientSpec extends Specification {
             ledgerResponse.name() == ledgerName
             ledgerResponse.meta_data().project_owner() == ledger_meta.project_owner()
             ledgerResponse.created_at() != null
+
+        when:
+            def getLedger = blnkClient.getLedger(new GetLedgerRequest(ledgerResponse.ledger_id()))
+        then:
+            getLedger.ledger_id() == ledgerResponse.ledger_id()
+            getLedger.name() == ledgerName
+            getLedger.meta_data().project_owner() == ledgerResponse.meta_data().project_owner()
+            getLedger.created_at() != ledgerResponse.created_at()
     }
 }

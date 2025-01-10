@@ -37,7 +37,7 @@ java {
 }
 
 
-graalvmNative.toolchainDetection = false
+//graalvmNative.toolchainDetection = false
 
 micronaut {
     runtime("tomcat")
