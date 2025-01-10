@@ -3,17 +3,38 @@
  */
 package blnk.witaxi
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
+//import io.micronaut.serde.ObjectMapper
+//import io.micronaut.serde.annotation.Serdeable
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Specification
 
+@MicronautTest
 class LibraryTest extends Specification {
+    @Inject
+    ObjectMapper objectMapper
+
     def "someLibraryMethod returns true"() {
         setup:
         def lib = new Library()
 
         when:
-        def result = lib.someLibraryMethod()
+            def result = objectMapper.write("""{"name": "thando"}""", Person)
 
         then:
-        result == true
+            result.name == "thando"
     }
+}
+
+//@Serdeable
+class Person {
+    String name
+
+    Person(String name) {
+        this.name = name
+    }
+
+    Person() {}
 }

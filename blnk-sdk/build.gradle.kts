@@ -9,6 +9,8 @@
 plugins {
     // Apply the groovy plugin to also add support for Groovy (needed for Spock)
     groovy
+    id("io.micronaut.library") version "4.4.4"
+    id("io.micronaut.test-resources") version "4.4.4"
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
@@ -26,6 +28,11 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation("io.micronaut:micronaut-core") // Core Micronaut libraries
+    implementation("io.micronaut:micronaut-jackson-databind") // Jackson support
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
     // Spock Testing Framework
     testImplementation("org.spockframework:spock-core:2.4-M1-groovy-4.0")
     testImplementation("org.spockframework:spock-junit4:2.4-M1-groovy-4.0")
@@ -34,12 +41,17 @@ dependencies {
     implementation("org.apache.groovy:groovy-all:4.0.24")
     testImplementation("org.apache.groovy:groovy-test:4.0.24")
     testImplementation("junit:junit:4.13.2")
+    testImplementation ("io.micronaut.test:micronaut-test-spock")
+    testImplementation("net.datafaker:datafaker:2.4.2")
+
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation("com.google.guava:guava:30.1.1-jre")
+
+
 }
 
 tasks.named<Test>("test") {
