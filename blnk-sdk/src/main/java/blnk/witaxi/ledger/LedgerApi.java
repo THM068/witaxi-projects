@@ -1,10 +1,12 @@
 package blnk.witaxi.ledger;
 
-import java.io.IOException;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 public interface LedgerApi {
-    LedgerResponse createLedger(CreateLedgerRequest ledgerRequest) throws IOException, InterruptedException;
 
-    LedgerResponse getLedger(GetLedgerRequest getLedgerRequest) throws IOException, InterruptedException;
+    Publisher<LedgerResponse> createLedger(CreateLedgerRequest ledgerRequest);
+
+    Publisher<LedgerResponse> getLedger(GetLedgerRequest getLedgerRequest);
 
 }

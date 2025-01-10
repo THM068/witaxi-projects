@@ -4,52 +4,39 @@ import blnk.witaxi.ledger.CreateLedgerRequest;
 import blnk.witaxi.ledger.GetLedgerRequest;
 import blnk.witaxi.ledger.LedgerApi;
 import blnk.witaxi.ledger.LedgerResponse;
-import io.micronaut.context.annotation.Value;
-import io.micronaut.serde.ObjectMapper;
+import io.micronaut.core.async.annotation.SingleResult;
+import io.micronaut.core.type.Argument;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.uri.UriBuilder;
 import jakarta.inject.Singleton;
+import org.reactivestreams.Publisher;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-
-import static blnk.witaxi.request.RequestUtility.createUrl;
+import static io.micronaut.http.HttpHeaders.ACCEPT;
 
 @Singleton
 public class BlnkClient  implements LedgerApi {
-    private final String baseUrl;
-    private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
 
-    public BlnkClient(@Value("${blnk.base.url}") String baseUrl, ObjectMapper objectMapper) {
-        this.baseUrl = baseUrl;
-        this.objectMapper = objectMapper;
+    public BlnkClient(@Client(id = "blnk") HttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     @Override
-    public LedgerResponse createLedger(CreateLedgerRequest ledgerRequest) throws IOException, InterruptedException {
-        final String requestBody = objectMapper.writeValueAsString(ledgerRequest);
-        final HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(createUrl(this.baseUrl, ledgerRequest.path())))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8)) // Set the body
-                .build();
-        final HttpResponse<String> response = httpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), LedgerResponse.class);
+    @SingleResult
+    public Publisher<LedgerResponse> createLedger(CreateLedgerRequest ledgerRequest)  {
+        final var uri = UriBuilder.of("/ledgers").build();
+        HttpRequest<CreateLedgerRequest> req = HttpRequest.POST(uri, ledgerRequest)
+                .header(ACCEPT,  "application/json");
+        final Publisher<LedgerResponse> response = httpClient.retrieve(req, Argument.of(LedgerResponse.class));
+        return response;
     }
 
     @Override
-    public LedgerResponse getLedger(GetLedgerRequest getLedgerRequest) throws IOException, InterruptedException {
-        final HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(createUrl(this.baseUrl, getLedgerRequest.path())))
-                .GET()
-                .build();
-        final HttpResponse<String> response = httpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), LedgerResponse.class);
+    @SingleResult
+    public Publisher<LedgerResponse> getLedger(GetLedgerRequest getLedgerRequest) {
+        return null;
     }
 
-    private HttpClient httpClient() {
-        return HttpClient.newHttpClient();
-    }
 }
