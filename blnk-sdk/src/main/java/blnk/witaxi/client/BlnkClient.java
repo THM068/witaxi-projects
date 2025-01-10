@@ -29,8 +29,8 @@ public class BlnkClient  implements LedgerApi {
 
     @Override
     public LedgerResponse createLedger(CreateLedgerRequest ledgerRequest) throws IOException, InterruptedException {
-        String requestBody = objectMapper.writeValueAsString(ledgerRequest);
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        final String requestBody = objectMapper.writeValueAsString(ledgerRequest);
+        final HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(createUrl(this.baseUrl, ledgerRequest.path())))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8)) // Set the body
@@ -41,7 +41,7 @@ public class BlnkClient  implements LedgerApi {
 
     @Override
     public LedgerResponse getLedger(GetLedgerRequest getLedgerRequest) throws IOException, InterruptedException {
-        HttpRequest httpRequest = HttpRequest.newBuilder()
+        final HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(createUrl(this.baseUrl, getLedgerRequest.path())))
                 .GET()
                 .build();
