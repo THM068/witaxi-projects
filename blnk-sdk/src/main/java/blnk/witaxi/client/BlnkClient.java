@@ -7,11 +7,12 @@ import blnk.witaxi.ledger.LedgerResponse;
 import io.micronaut.core.async.annotation.SingleResult;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.uri.UriBuilder;
 import jakarta.inject.Singleton;
-import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 import static io.micronaut.http.HttpHeaders.ACCEPT;
 
@@ -25,18 +26,21 @@ public class BlnkClient  implements LedgerApi {
 
     @Override
     @SingleResult
-    public Publisher<LedgerResponse> createLedger(CreateLedgerRequest ledgerRequest)  {
+    public Mono<HttpResponse<LedgerResponse>> createLedger(CreateLedgerRequest ledgerRequest)  {
         final var uri = UriBuilder.of("/ledgers").build();
         HttpRequest<CreateLedgerRequest> req = HttpRequest.POST(uri, ledgerRequest)
                 .header(ACCEPT,  "application/json");
-        final Publisher<LedgerResponse> response = httpClient.retrieve(req, Argument.of(LedgerResponse.class));
-        return response;
+        final Mono<HttpResponse<LedgerResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(LedgerResponse.class)));
+        return response.handle(createLedgerHandler());
     }
 
     @Override
     @SingleResult
-    public Publisher<LedgerResponse> getLedger(GetLedgerRequest getLedgerRequest) {
-        return null;
+    public Mono<HttpResponse<LedgerResponse>> getLedger(GetLedgerRequest getLedgerRequest) {
+        final var uri = UriBuilder.of(String.format("/ledgers/%s", getLedgerRequest.ledger_id())).build();
+        HttpRequest<?> req = HttpRequest.GET(uri).header(ACCEPT,  "application/json");
+        final Mono<HttpResponse<LedgerResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(LedgerResponse.class)));
+        return response.handle(getLedgerHandler());
     }
 
 }

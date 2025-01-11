@@ -1,6 +1,7 @@
 package blnk.witaxi.client
 import blnk.witaxi.ledger.GetLedgerRequest
 import blnk.witaxi.ledger.CreateLedgerRequest
+import blnk.witaxi.ledger.LedgerResponse
 import blnk.witaxi.ledger.Ledger_Meta
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -15,7 +16,7 @@ class BlnkClientSpec extends Specification {
     BlnkClient blnkClient
     private final Faker faker = new Faker();
 
-    def "BlnkClient can create a Ledger"() {
+    def "BlnkClient can create a Ledger using stepverifier"() {
         given:
 
             String ledgerName = String.format("Ledger for %s",faker.name().fullName())
@@ -24,12 +25,13 @@ class BlnkClientSpec extends Specification {
             CreateLedgerRequest ledgerRequest = new CreateLedgerRequest(ledgerName, ledger_meta)
         expect:
             StepVerifier.create(blnkClient.createLedger(ledgerRequest))
-        .expectNextMatches(ledgerResponse -> {
-            ledgerResponse.ledger_id() != null  &&
-            ledgerResponse.name() == ledgerName &&
-            ledgerResponse.meta_data().project_owner() == ledger_meta.project_owner() &&
-            ledgerResponse.created_at() != null
-        }).verifyComplete()
+            .expectNextMatches(ledgerResponse -> {
+                LedgerResponse result = ledgerResponse.body()
+                result.ledger_id() != null  &&
+                result.name() == ledgerName &&
+                result.meta_data().project_owner() == ledger_meta.project_owner() &&
+                result.created_at() != null
+            }).verifyComplete()
 
 
 //            ledgerResponse != null
