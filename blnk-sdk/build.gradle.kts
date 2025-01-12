@@ -30,9 +30,13 @@ repositories {
 dependencies {
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     implementation("io.micronaut:micronaut-core") // Core Micronaut libraries
+    implementation("io.micronaut.reactor:micronaut-reactor") // Reactor support
+    // https://mvnrepository.com/artifact/io.projectreactor/reactor-test
+    testImplementation("io.projectreactor:reactor-test:3.7.1")
     implementation("io.micronaut:micronaut-jackson-databind") // Jackson support
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut:micronaut-http-client") // HTTP client
     // Spock Testing Framework
     testImplementation("org.spockframework:spock-core:2.4-M1-groovy-4.0")
     testImplementation("org.spockframework:spock-junit4:2.4-M1-groovy-4.0")
