@@ -7,6 +7,9 @@ import blnk.witaxi.ledger.LedgerResponse
 import blnk.witaxi.ledger.Ledger_Meta
 import blnk.witaxi.transactions.TransactionRequest
 import blnk.witaxi.transactions.TransactionRequestBuilder
+import blnk.witaxi.transactions.TransactionResponse
+import blnk.witaxi.transactions.TransactionStatus
+import blnk.witaxi.transactions.UpdateInflightRequest
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import net.datafaker.Faker
@@ -104,15 +107,55 @@ class BlnkClientSpec extends Specification {
                 .destination(getBalanceResponseResult.balance_id())
                 .meta_data(["sender_name": "Future Design LLC", "account_number": "1234567890"])
                 .allow_overdraft(true)
+                 .inflight(true)
                 .description("Test transaction ${UUID.randomUUID().toString()}")
                 .build()
-        println(transactionRequest)
         def transactionResponse = blnkClient.createTransaction(transactionRequest).block()
         then:
         transactionResponse != null
         transactionResponse.status().code == 201
-        println(transactionResponse.body())
+        TransactionResponse transactionResponseResult = transactionResponse.body()
+        transactionResponseResult.transactionId() != null
+        transactionResponseResult.amount() == 100
+        transactionResponseResult.rate() == 0
+        transactionResponseResult.precision() == 100
+        transactionResponseResult.preciseAmount() == 10000
+        transactionResponseResult.parentTransaction() == ""
+        transactionResponseResult.source() == "@World"
+        transactionResponseResult.destination() == getBalanceResponseResult.balance_id()
+        transactionResponseResult.reference() != null
+        transactionResponseResult.currency() == "USD"
+        transactionResponseResult.description().startsWith("Test transaction")
+        transactionResponseResult.status() == "INFLIGHT"
+        transactionResponseResult.hash() != null
+        transactionResponseResult.allowOverdraft() == true
+        transactionResponseResult.inflight() == true
+        transactionResponseResult.createdAt() != null
+        transactionResponseResult.scheduledFor() != null
+        transactionResponseResult.inflightExpiryDate() != null
 
+        //update inflight transaction
+        when:
+            var updateTransactionRequest = new UpdateInflightRequest(TransactionStatus.COMMIT.getStatus())
+            println "Transaction ID: ${transactionResponseResult.transactionId()}"
+            sleep(50000)
+            def updateInFlightTransaction = blnkClient.updateInflight(transactionResponseResult.transactionId(), updateTransactionRequest).block()
+        then:
+            updateInFlightTransaction != null
+            updateInFlightTransaction.status().code == 200
+            TransactionResponse updateInFlightTransactionResult = transactionResponse.body()
+            updateInFlightTransactionResult.status() == "INFLIGHT"
+
+        // Refund a transaction
+        when:
+            sleep(50000)
+            def refundTransaction = blnkClient.refundTransaction(transactionResponseResult.transactionId()).block()
+        then:
+            refundTransaction != null
+            refundTransaction.status().code == 201
+            TransactionResponse refundTransactionResult = refundTransaction.body()
+            refundTransactionResult.status() == "QUEUED"
+            println("Refund Transaction: ${refundTransactionResult}")
 
     }
 }

@@ -4,6 +4,7 @@ import blnk.witaxi.balances.BalanceApi;
 import blnk.witaxi.balances.CreateBalanceRequest;
 import blnk.witaxi.balances.CreateBalanceResponse;
 import blnk.witaxi.balances.GetBalanceResponse;
+import blnk.witaxi.exceptions.BlnkError;
 import blnk.witaxi.ledger.CreateLedgerRequest;
 import blnk.witaxi.ledger.GetLedgerRequest;
 import blnk.witaxi.ledger.LedgerApi;
@@ -11,24 +12,25 @@ import blnk.witaxi.ledger.LedgerResponse;
 import blnk.witaxi.transactions.TransactionApi;
 import blnk.witaxi.transactions.TransactionRequest;
 import blnk.witaxi.transactions.TransactionResponse;
+import blnk.witaxi.transactions.UpdateInflightRequest;
 import io.micronaut.core.async.annotation.SingleResult;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.http.uri.UriBuilder;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 
 import static io.micronaut.http.HttpHeaders.ACCEPT;
-import static io.micronaut.http.HttpHeaders.CONTENT_TYPE;
 
 @Singleton
 public class BlnkClient  implements LedgerApi, BalanceApi, TransactionApi {
     private final HttpClient httpClient;
 
-    public BlnkClient(@Client(id = "blnk") HttpClient httpClient) {
+    public BlnkClient(@Client(id = "blnk", errorType = BlnkError.class) HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
@@ -76,5 +78,22 @@ public class BlnkClient  implements LedgerApi, BalanceApi, TransactionApi {
                 .header(ACCEPT,  "application/json");
         final Mono<HttpResponse<TransactionResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(TransactionResponse.class)));
         return response.handle(createTransactionHandler());
+    }
+
+    @Override
+    public Mono<HttpResponse<TransactionResponse>> updateInflight(String transactionId, UpdateInflightRequest updateInflightRequest) {
+        final var uri = UriBuilder.of(String.format("/transactions/inflight/%s", transactionId)).build();
+        final HttpRequest<UpdateInflightRequest> req = HttpRequest.PUT(uri, updateInflightRequest);
+        final Mono<HttpResponse<TransactionResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(TransactionResponse.class)));
+        return response.handle(updateInflightHandler());
+
+    }
+
+    @Override
+    public Mono<HttpResponse<TransactionResponse>> refundTransaction(String transactionId) {
+        final var uri = UriBuilder.of(String.format("refund-transaction/%s", transactionId)).build();
+        final HttpRequest<?> req = HttpRequest.POST(uri, null);
+        final Mono<HttpResponse<TransactionResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(TransactionResponse.class)));
+        return response.handle(refundTransactionHandler());
     }
 }
