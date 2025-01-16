@@ -8,6 +8,9 @@ import blnk.witaxi.ledger.CreateLedgerRequest;
 import blnk.witaxi.ledger.GetLedgerRequest;
 import blnk.witaxi.ledger.LedgerApi;
 import blnk.witaxi.ledger.LedgerResponse;
+import blnk.witaxi.transactions.TransactionApi;
+import blnk.witaxi.transactions.TransactionRequest;
+import blnk.witaxi.transactions.TransactionResponse;
 import io.micronaut.core.async.annotation.SingleResult;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
@@ -19,9 +22,10 @@ import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
 
 import static io.micronaut.http.HttpHeaders.ACCEPT;
+import static io.micronaut.http.HttpHeaders.CONTENT_TYPE;
 
 @Singleton
-public class BlnkClient  implements LedgerApi, BalanceApi {
+public class BlnkClient  implements LedgerApi, BalanceApi, TransactionApi {
     private final HttpClient httpClient;
 
     public BlnkClient(@Client(id = "blnk") HttpClient httpClient) {
@@ -63,5 +67,14 @@ public class BlnkClient  implements LedgerApi, BalanceApi {
         final HttpRequest<?> req = HttpRequest.GET(uri).header(ACCEPT,  "application/json");
         final Mono<HttpResponse<GetBalanceResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(GetBalanceResponse.class)));
         return response.handle(getBalanceHandler());
+    }
+
+    @Override
+    public Mono<HttpResponse<TransactionResponse>> createTransaction(TransactionRequest transactionRequest) {
+        final var uri = UriBuilder.of("/transactions").build();
+        final HttpRequest<TransactionRequest> req = HttpRequest.POST(uri, transactionRequest)
+                .header(ACCEPT,  "application/json");
+        final Mono<HttpResponse<TransactionResponse>> response = Mono.from(httpClient.exchange(req, Argument.of(TransactionResponse.class)));
+        return response.handle(createTransactionHandler());
     }
 }

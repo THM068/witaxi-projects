@@ -1,10 +1,13 @@
 package blnk.witaxi.balances;
 
 import io.micronaut.serde.annotation.Serdeable;
+import io.soabase.recordbuilder.core.RecordBuilder;
 
 import java.math.BigDecimal;
 import java.util.Map;
+
 @Serdeable
+@RecordBuilder
 public record CreateBalanceResponse(
         BigDecimal balance,
         BigDecimal inflight_balance,

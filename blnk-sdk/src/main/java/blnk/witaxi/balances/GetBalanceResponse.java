@@ -1,9 +1,12 @@
 package blnk.witaxi.balances;
 
 import io.micronaut.serde.annotation.Serdeable;
+import io.soabase.recordbuilder.core.RecordBuilder;
 
 import java.math.BigDecimal;
 import java.util.Map;
+
+@RecordBuilder
 @Serdeable
 public record GetBalanceResponse(
         BigDecimal balance,

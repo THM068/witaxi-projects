@@ -13,7 +13,7 @@ public interface LedgerApi {
 
     Mono<HttpResponse<LedgerResponse>> getLedger(GetLedgerRequest getLedgerRequest);
 
-    default BiConsumer<HttpResponse<LedgerResponse>, SynchronousSink<HttpResponse<LedgerResponse>>> createLedgerHandler() {
+    default BiConsumer<HttpResponse<LedgerResponse>, SynchronousSink<HttpResponse<LedgerResponse>>>createLedgerHandler() {
         return (input, sink) -> {
             if (input.getStatus().getCode() >= 400) {
                 sink.error(new RuntimeException("Ledger Bad Request"));
