@@ -5,15 +5,26 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 }
-
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        mavenCentral() // Shared repository configuration
+    }
 }
+
 
 subprojects {
 
     repositories {
         mavenCentral()
+
+    }
+    dependencies {
+        apply(plugin = "java")
+
+        implementation("io.soabase.record-builder:record-builder-core:44")
+        testImplementation("io.soabase.record-builder:record-builder-core:44")
+        annotationProcessor("io.soabase.record-builder:record-builder-processor:44")
+
 
     }
 }
