@@ -21,7 +21,7 @@ class BlnkClientSpec extends Specification implements BlnkOperations{
 
     @Inject
     BlnkClient blnkClient
-    private final Faker faker = new Faker();
+
 
     def "BlnkClient can create a Ledger using stepverifier"() {
         given:
@@ -161,6 +161,6 @@ class BlnkClientSpec extends Specification implements BlnkOperations{
 
     def "test"() {
         expect:
-        createLedger().ledger_id() != null
+        createBalance(createLedger().ledger_id()).balance_id() != null
     }
 }
