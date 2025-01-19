@@ -17,7 +17,7 @@ import reactor.test.StepVerifier
 import spock.lang.Specification
 
 @MicronautTest(environments = ["test"])
-class BlnkClientSpec extends Specification {
+class BlnkClientSpec extends Specification implements BlnkOperations{
 
     @Inject
     BlnkClient blnkClient
@@ -157,5 +157,10 @@ class BlnkClientSpec extends Specification {
             refundTransactionResult.status() == "QUEUED"
             println("Refund Transaction: ${refundTransactionResult}")
 
+    }
+
+    def "test"() {
+        expect:
+        createLedger().ledger_id() != null
     }
 }
