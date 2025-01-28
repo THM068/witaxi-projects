@@ -2,7 +2,6 @@ package blnk.witaxi.client
 
 import blnk.witaxi.balances.CreateBalanceRequest
 import blnk.witaxi.balances.CreateBalanceResponse
-import blnk.witaxi.balances.GetBalanceResponse
 import blnk.witaxi.ledger.CreateLedgerRequest
 import blnk.witaxi.ledger.LedgerResponse
 import blnk.witaxi.ledger.Ledger_Meta

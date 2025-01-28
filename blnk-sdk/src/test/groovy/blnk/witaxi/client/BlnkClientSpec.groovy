@@ -159,8 +159,8 @@ class BlnkClientSpec extends Specification implements BlnkOperations{
 
     }
 
-    def "test"() {
+    def "test multiple sources"() {
         expect:
-        createBalance(createLedger().ledger_id()).balance_id() != null
+        createBalance("createLedger().ledger_id()").balance_id() != null
     }
 }
